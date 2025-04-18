@@ -1,0 +1,102 @@
+/* - - - EVERYTHING - - - */
+
+html{
+font-size: 62.5%; }
+
+*{
+position: relative;
+margin: 0rem;
+padding: 0rem; }
+
+body{
+padding: 3rem 7rem;
+background-color: #E1E1E1;
+font-family: "Montserrat", sans-serif; }
+
+/* - - - MAIN - - - */
+
+main{
+height: auto;
+display: flex;
+padding: 2rem;
+background-color: #FFFFFF;
+flex-direction: column; }
+
+.title{
+text-align: center;
+font-size: 3rem;
+color: #535858; }
+
+.text{
+padding-top: 1rem;
+text-align: center;
+font-size: 1.8rem;
+color: #535858; }
+
+.form{
+margin-top: 0.5rem;
+height: auto;
+display: flex; }
+
+.form_left{
+margin-right: 0.5rem;
+height: auto;
+width: 30%;
+display: flex;
+background-color: #FFFFFF;
+flex-direction: column; }
+
+.form_rigth{
+height: auto;
+width: 70%;
+display: flex;
+background-color: #FFFFFF; }
+
+.option{
+width: 100%;
+padding-block: 1.5rem;
+text-align: center;
+font-size: 1.8rem;
+color: #535858; }
+
+.option div{
+cursor: pointer; }
+
+.main_form{
+width: 100%;
+padding: 2rem;
+flex-direction: column;
+text-align: center; }
+
+textarea{
+border: none;
+border-radius: 0rem;
+background-color: #E1E1E1;
+font-family: "Montserrat", sans-serif;
+font-size: 1.5rem;
+padding: 0.5rem 1rem; }
+
+div .button{
+margin-top: 2rem;
+padding: 1rem 2rem;
+font-family: "Montserrat", sans-serif;
+font-weight: bold;
+font-size: 1.5rem;
+border-radius: 1rem;
+cursor: pointer;
+border: none;
+color: #FFFFFF;
+background: rgb(63,94,251);
+background: radial-gradient(circle, rgba(63,94,251,1) 0%, rgba(252,70,107,1) 100%);
+}
+
+/* - - - EVENTOS - - - */
+
+div .button:hover{
+opacity: 0.9;
+scale: 1.1;
+}
+
+/*
+Gray: #535858;
+*/
