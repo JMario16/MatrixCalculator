@@ -19,7 +19,10 @@
 <div class="text">Programa que resuelve S.E.L por metodo de Gauss, Gauss-Jordan y Cramer, así como otras operaciones con matrices</div>
 </main>
 
+<!-- - - - FORM - - - -->
+
 <div class="form">
+
 <div class="form_left">
 <div class="option"><b>Operaciones con matrices</b></div>
 <div class="option selected" data-target="sum"><div>Suma de matrices</div></div>
@@ -28,6 +31,7 @@
 <div class="option" data-target="scal"><div>Matriz por escalar</div></div>
 <div class="option" data-target="trans"><div>Transpuesta</div></div>
 <div class="option" data-target="det"><div>Determinante</div></div>
+<div class="option" data-target="inv"><div>Inversa</div></div>
 <div class="option"><b>Solución de S.E.L</b></div>
 <div class="option" data-target="gauss"><div>Método de Gauss</div></div>
 <div class="option" data-target="jordan"><div>Método de Gauss-Jordan</div></div>
@@ -35,22 +39,60 @@
 </div>
 
 <div class="form_rigth">
-<div class="main_form">
-<div class="data" id="sum">
-	<div class="text"><b>Ingrese el tamaño de las matrices:</b></div>
-	<div class="box_1"><textarea rows="1" cols="3"></textarea><div class="text" style="padding-inline: 2rem;">X</div>
-	<textarea rows="1" cols="3"></textarea></div>
-	<div style="display: flex; justify-content: center;"><button class="button" onclick="sum_subs(1)">Ingresar datos</button></div>
+	<div class="main_form">
+	<div class="data" id="sum">
+		<div class="text"><b>Ingrese el tamaño de las matrices:</b></div>
+		<div class="box_1"><textarea rows="1" cols="3"></textarea><div class="text" style="padding-inline: 2rem;">X</div>
+		<textarea rows="1" cols="3"></textarea></div>
+		<div style="display: flex; justify-content: center;"><button class="button" onclick="sum_subs(1)">Ingresar datos</button></div>
+	</div>
+	<div class="data" id="subs">
+		<div class="text"><b>Ingrese el tamaño de las matrices:</b></div>
+		<div class="box_1"><textarea rows="1" cols="3"></textarea><div class="text" style="padding-inline: 2rem;">X</div>
+		<textarea rows="1" cols="3"></textarea></div>
+		<div style="display: flex; justify-content: center;"><button class="button" onclick="sum_subs(2)">Ingresar datos</button></div>
+	</div>
+	<div class="data" id="product">
+		<div class="text"><b>Ingrese el tamaño de la primer matriz:</b></div>
+		<div class="box_1"><textarea rows="1" cols="3"></textarea><div class="text" style="padding-inline: 2rem;">X</div>
+		<textarea rows="1" cols="3"></textarea></div>
+		<div class="text"><b>Ingrese el tamaño de la segunda matriz:</b></div>
+		<div class="box_1"><textarea rows="1" cols="3"></textarea><div class="text" style="padding-inline: 2rem;">X</div>
+		<textarea rows="1" cols="3"></textarea></div>
+		<div style="display: flex; justify-content: center;"><button class="button" onclick="product()">Ingresar datos</button></div>
+	</div>
+	<div class="data" id="scal">
+		<div class="text"><b>Ingrese el tamaño de la matriz:</b></div>
+		<div class="box_1"><textarea rows="1" cols="3"></textarea><div class="text" style="padding-inline: 2rem;">X</div>
+		<textarea rows="1" cols="3"></textarea></div>
+		<div class="text"><b>Ingrese el numero/escalar:</b></div>
+		<div class="box_1"><textarea rows="1" cols="3"></textarea></div>
+		<div style="display: flex; justify-content: center;"><button class="button" onclick="scal()">Ingresar datos</button></div>
+	</div>
+	<div class="data" id="trans">
+		<div class="text"><b>Ingrese el tamaño de la matriz:</b></div>
+		<div class="box_1"><textarea rows="1" cols="3"></textarea><div class="text" style="padding-inline: 2rem;">X</div>
+		<textarea rows="1" cols="3"></textarea></div>
+		<div style="display: flex; justify-content: center;"><button class="button" onclick="trans_det(1)">Ingresar datos</button></div>
+	</div>
+	<div class="data" id="det">
+		<div class="text"><b>Ingrese el tamaño de la matriz:</b></div>
+		<div class="box_1"><textarea rows="1" cols="3"></textarea><div class="text" style="padding-inline: 2rem;">X</div>
+		<textarea rows="1" cols="3"></textarea></div>
+		<div style="display: flex; justify-content: center;"><button class="button" onclick="trans_det(2)">Ingresar datos</button></div>
+	</div>
+	<div class="data" id="inv">
+		<div class="text"><b>Ingrese el tamaño de la matriz:</b></div>
+		<div class="box_1"><textarea rows="1" cols="3"></textarea><div class="text" style="padding-inline: 2rem;">X</div>
+		<textarea rows="1" cols="3"></textarea></div>
+		<div style="display: flex; justify-content: center;"><button class="button" onclick="inverse()">Ingresar datos</button></div>
+	</div>
+	</div>
 </div>
-<div class="data" id="subs">
-	<div class="text"><b>Ingrese el tamaño de las matrices:</b></div>
-	<div class="box_1"><textarea rows="1" cols="3"></textarea><div class="text" style="padding-inline: 2rem;">X</div>
-	<textarea rows="1" cols="3"></textarea></div>
-	<div style="display: flex; justify-content: center;"><button class="button" onclick="sum_subs(2)">Ingresar datos</button></div>
+
 </div>
-</div>
-</div>
-</div>
+
+<!-- - - - SCRIPTS - - - -->
 
 <script src="options.js"></script>
 <script src="data.js"></script>
