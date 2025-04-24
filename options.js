@@ -1,5 +1,5 @@
 const options=document.querySelectorAll('.option');
-const dataSections=document.querySelectorAll('.data');
+const data_sections=document.querySelectorAll('.data');
 
 options.forEach(option => {
     option.addEventListener('click', function(){
@@ -8,16 +8,26 @@ options.forEach(option => {
         options.forEach(opt => opt.classList.remove('selected'));
         this.classList.add('selected');
 
-        dataSections.forEach(section => section.classList.remove('active'));
+        data_sections.forEach(section => {
+            section.classList.remove('active');
+            section.style.display='none';
+        });
 
-        const targetId=this.dataset.target;
-        const targetElement=document.getElementById(targetId);
-        if(targetElement) targetElement.classList.add('active');
+        const target_id=this.dataset.target;
+        const target=document.getElementById(target_id);
+        if(target){
+            target.style.display='block';
+            void target.offsetWidth;
+            target.classList.add('active');
+        }
     });
 });
 
-const initialTarget=document.querySelector('.option.selected')?.dataset.target;
-if(initialTarget){
-    const initialSection=document.getElementById(initialTarget);
-    if(initialSection) initialSection.classList.add('active');
+const initial_targ=document.querySelector('.option.selected')?.dataset.target;
+if(initial_targ){
+    const initial_sec=document.getElementById(initial_targ);
+    if(initial_sec){
+        initial_sec.style.display='block';
+        initial_sec.classList.add('active');
+    }
 }
