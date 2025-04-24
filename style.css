@@ -114,6 +114,9 @@ padding-top: 1rem;
 
 .data{
 display: none;
+opacity: 0;
+transform: translateX(-20px);
+transition: opacity 0.4s ease, transform 0.5s ease;
 }
 
 .back{
@@ -144,6 +147,8 @@ padding-inline: 1.5rem;
 
 .data.active{
 display: block;
+opacity: 1;
+transform: translateX(0);
 }
 
 /*
