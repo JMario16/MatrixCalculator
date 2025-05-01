@@ -50,6 +50,7 @@ margin-right: 0.5rem;
 height: auto;
 width: 30%;
 display: flex;
+padding-bottom: 2rem;
 background-color: #FFFFFF;
 flex-direction: column;
 align-items: center;
