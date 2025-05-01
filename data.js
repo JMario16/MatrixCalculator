@@ -1,7 +1,20 @@
+// - - - - G L O B A L - F U N C T I O N S - - - - 
+
 function matrix_latex(matrix){ // - - - MATRIX TO LATEX - - - 
     let latex='\\[\\begin{bmatrix}';
     for(let i=0; i<matrix.length; i++){
-        latex+=matrix[i].join(' & ');
+        const row_latex=matrix[i].map(val => {
+            if(Number.isInteger(val)) return val;
+
+            try{
+                const frac=math.fraction(val);
+                return `\\frac{${frac.n}}{${frac.d}}`;
+            }catch(e){
+                return val.toFixed(4);
+            }
+        }).join(' & ');
+
+        latex+=row_latex;
         if(i!==matrix.length-1) latex+=' \\\\ ';
     }
     latex+='\\end{bmatrix}\\]';
@@ -27,20 +40,58 @@ function create_table(rows, cols, className){ // - - - CREATE TABLE - - -
 }
 
 function read_matrix(table){ // - - - TABLE TO MATRIX - - - 
-        const rows_divs=table.querySelectorAll('.text_table');
-        const matrix=[];
-        for(let row of rows_divs){
-            const values=[];
-            const cols_divs=row.querySelectorAll('textarea');
-            for(let col of cols_divs){
-                const val=parseFloat(col.value);
-                if(isNaN(val)) return null;
+    const rows_divs=table.querySelectorAll('.text_table');
+    const matrix=[];
+    for(let row of rows_divs){
+        const values=[];
+        const cols_divs=row.querySelectorAll('textarea');
+        for(let col of cols_divs){
+            let text=col.value.trim();
+            try{
+                const val=math.evaluate(text);
+                if(typeof val!=='number' || !isFinite(val)) return null;
                 values.push(val);
+            }catch(e){
+                return null;
             }
-            matrix.push(values);
         }
-        return matrix;
+        matrix.push(values);
     }
+    return matrix;
+}
+
+function determinant(A){ // - - - DETERMINANT - - - 
+    const n=A.length;
+    let det=0;
+     
+    if(n==1){
+        det=A[0][0];
+    }else{
+        for(let j=0; j<n; j++){
+            det+=(A[0][j]*cofactor(A, 0, j));
+        }
+    }
+    return det;
+}
+ 
+function cofactor(A, row, col){ // - - - COFACTOR MATRIX - - - 
+    const n=A.length;
+    const submatrix=[];
+    for(let i=0; i<n; i++){
+        if(i!==row){
+            const aux_row=[];
+            for(let j=0; j<n; j++){
+                if(j!==col){
+                    aux_row.push(A[i][j]);
+                }
+            }
+            submatrix.push(aux_row);
+        }
+    }
+    return Math.pow(-1, row+col)*determinant(submatrix);
+}
+
+// - - - - B U T T O N S - F U N C T I O N S - - - - 
 
 function sum_subs(n){ // - - - SUM AND SUBSTRACTION - - - 
     const back=document.getElementById('back');
@@ -284,7 +335,13 @@ function scal(){ // - - - SCALAR - - -
     const inputs=document.querySelectorAll('#scal .box_1 textarea');
     const rows=parseInt(inputs[0].value);
     const cols=parseInt(inputs[1].value);
-    const scalar=parseFloat(inputs[2].value); 
+    let scalar;
+    try{
+        scalar=math.fraction(inputs[2].value);
+    }catch(e){
+        alert('Ingrese un escalar válido (número o fracción).');
+        return;
+    }
 
     if(isNaN(rows) || isNaN(cols) || rows<=0 || cols<=0 || isNaN(scalar)){
         alert('Ingrese números válidos para las filas, las columnas y el escalar.');
@@ -332,7 +389,7 @@ function scal(){ // - - - SCALAR - - -
         for(let i=0; i<rows; i++){
             const values=[];
             for(let j=0; j<cols; j++){
-                values.push(matrixA[i][j]*scalar);
+                values.push(math.number(math.multiply(matrixA[i][j], scalar)));
             }
         matrixR.push(values);
         }
@@ -341,9 +398,11 @@ function scal(){ // - - - SCALAR - - -
         const original_res=result.innerHTML;
         result.innerHTML='';
 
+        let scalar_latex=Number.isInteger(scalar) ? scalar : `\\frac{${scalar.n}}{${scalar.d}}`;
+
         result.innerHTML=`<div style="font-size: 1.5rem; text-align: center;">
             \\[ A = ${matrix_latex(matrixA).slice(2, -2)} \\]
-            \\[ k = ${scalar} \\]
+            \\[ k = ${scalar_latex} \\]
             \\[ kA = ${matrix_latex(matrixR).slice(2, -2)} \\]
         </div>`;
 
@@ -363,7 +422,7 @@ function scal(){ // - - - SCALAR - - -
     }
 }
 
-function trans(){
+function trans(){ // - - - TRANSPOSED - - - 
     const back=document.getElementById('back');
     document.body.style.overflow='hidden';
     back.innerHTML='';
@@ -452,124 +511,91 @@ function trans(){
     }
 }
 
-function det(){ // Hay un problema a la hora de hacer un nuevo cálculo
-    const back=document.getElementById('back');
-    document.body.style.overflow='hidden';
-    back.innerHTML='';
+function det(){ // - - - DETERMINANT - - - 
+     const back=document.getElementById('back');
+     document.body.style.overflow='hidden';
+     back.innerHTML='';
+ 
+     const inputs=document.querySelectorAll('#det .box_1 textarea');
+     const rows=parseInt(inputs[0].value);
+     const cols=parseInt(inputs[1].value);
+ 
+     if(isNaN(rows) || isNaN(cols) || rows<=0 || cols<=0){
+         alert('Por favor, ingrese números válidos para filas y columnas.');
+         return;
+     }
+ 
+     if(rows!==cols){
+         alert('La matriz debe ser cuadrada.');
+         return;
+     }
+ 
+     const container=document.createElement('div');
+     container.style.display='flex';
+     container.style.flexDirection='column';
+     container.style.alignItems='center';
+     container.style.padding='2rem';
+     container.style.backgroundColor='white';
+     container.style.margin='5rem auto';
+     container.style.width='fit-content';
+ 
+     let matrixA=[];
+     const tableA=create_table(rows, cols, 'matrixA');
+     tableA.style.marginTop='1rem';
+     const calc_button=document.createElement('button');
+     calc_button.innerText='Calcular';
+     calc_button.className='button';
+     calc_button.onclick=() => calculate_det();
+ 
+     container.appendChild(document.createElement('h2')).innerText='Matriz A';
+     container.appendChild(tableA);
+     container.appendChild(calc_button);
+ 
+     back.appendChild(container);
+     back.style.display='flex';
+     back.style.justifyContent='center';
+     back.style.alignItems='center';
+ 
+     function calculate_det(){
+         matrixA=read_matrix(tableA);
+         const matrix_aux=read_matrix(tableA);
+ 
+         if(!matrixA){
+             alert('Ningún espacio puede quedar vacío.');
+             return;
+         }
+ 
+         document.body.style.overflow='auto';
+         back.style.display='none';
+ 
+         let det=determinant(matrixA); // Falta hacer que si el determinante sale en fracción se muestre como fracción en latex.
+ 
+         const result=document.getElementById('det');
+         const original_res=result.innerHTML;
+         result.innerHTML='';
+ 
+         result.innerHTML=`<div style="font-size: 1.5rem; text-align: center;">
+             \\[ A = ${matrix_latex(matrixA).slice(2, -2)} \\]
+             \\[ \\det(A) = ${det} \\]
+         </div>`;
+ 
+         const restart_button=document.createElement('button');
+         restart_button.innerText='Nuevo cálculo';
+         restart_button.className='button';
+         restart_button.onclick=() => {
+             result.classList.remove('active');
+             setTimeout(() => {
+                 result.innerHTML=original_res;
+                 result.classList.add('active');
+             }, 400);
+         }
+ 
+         result.appendChild(restart_button);
+         MathJax.typeset();
+     }
+ }
 
-    const inputs=document.querySelectorAll('#det .box_1 textarea');
-    const rows=parseInt(inputs[0].value);
-    const cols=parseInt(inputs[1].value);
-
-    if(isNaN(rows) || isNaN(cols) || rows<=0 || cols<=0){
-        alert('Por favor, ingrese números válidos para filas y columnas.');
-        return;
-    }
-
-    if(rows!==cols){
-        alert('La matriz debe ser cuadrada.');
-        return;
-    }
-
-    const container=document.createElement('div');
-    container.style.display='flex';
-    container.style.flexDirection='column';
-    container.style.alignItems='center';
-    container.style.padding='2rem';
-    container.style.backgroundColor='white';
-    container.style.margin='5rem auto';
-    container.style.width='fit-content';
-
-    let matrixA=[];
-    const tableA=create_table(rows, cols, 'matrixA');
-    tableA.style.marginTop='1rem';
-    const calc_button=document.createElement('button');
-    calc_button.innerText='Calcular';
-    calc_button.className='button';
-    calc_button.onclick=() => calculate_det();
-
-    container.appendChild(document.createElement('h2')).innerText='Matriz A';
-    container.appendChild(tableA);
-    container.appendChild(calc_button);
-
-    back.appendChild(container);
-    back.style.display='flex';
-    back.style.justifyContent='center';
-    back.style.alignItems='center';
-
-    function calculate_det(){
-        matrixA=read_matrix(tableA);
-        const matrix_aux=read_matrix(tableA);
-
-        if(!matrixA){
-            alert('Ningún espacio puede quedar vacío.');
-            return;
-        }
-
-        document.body.style.overflow='auto';
-        back.style.display='none';
-
-        det = determinante(matrixA);
-
-        const result=document.getElementById('det');
-        const original_res=result.innerHTML;
-        result.innerHTML='';
-
-        result.innerHTML=`<div style="font-size: 1.5rem; text-align: center;">
-            \\[ A = ${matrix_latex(matrixA).slice(2, -2)} \\]
-            \\[ \\det(A) = ${det} \\]
-        </div>`;
-
-        const restart_button=document.createElement('button');
-        restart_button.innerText='Nuevo cálculo';
-        restart_button.className='button';
-        restart_button.onclick=() => {
-            result.classList.remove('active');
-            setTimeout(() => {
-                result.innerHTML=original_res;
-                result.classList.add('active');
-            }, 400);
-        }
-
-        result.appendChild(restart_button);
-        MathJax.typeset();
-
-        function determinante(A){
-            const tam =  A.length;
-            let det = 0;
-            
-            if (tam == 1){
-                det = A[0][0];
-            } else {
-                for (let j = 0; j < tam; j++){
-                    det = det + (A[0][j] * cofactor(A, 0, j));
-                }
-            }
-        
-            return det;
-        }
-
-        function cofactor(A, fila, columna){
-            const tam = A.length;
-            const submatriz = [];
-            for (let i = 0; i < tam; i++){
-                if (i !== fila){
-                    const fila_aux = [];
-                    for (let j = 0; j < tam; j++){
-                        if (j !== columna){
-                            fila_aux.push(A[i][j]);
-                        }
-                    }
-                    submatriz.push(fila_aux);
-                }
-            }
-        
-            return Math.pow(-1, fila + columna) * determinante(submatriz);
-        }
-    }
-}
-
-function inverse(){
+function inverse(){ // - - - INVERSE - - - 
     const back=document.getElementById('back');
     document.body.style.overflow='hidden';
     back.innerHTML='';
@@ -579,7 +605,7 @@ function inverse(){
     const cols=parseInt(inputs[1].value);
 
     if(isNaN(rows) || isNaN(cols) || rows<=0 || cols<=0){
-        alert('Por favor, ingrese números válidos para filas y columnas.');
+        alert('Ingrese números válidos para las filas y columnas.');
         return;
     }
 
@@ -626,25 +652,24 @@ function inverse(){
         document.body.style.overflow='auto';
         back.style.display='none';
 
-        const identidad=[];
+        const identity=[];
         for(let i=0; i<rows; i++){
-            const fila=[];
+            const row=[];
             for(let j=0; j<cols; j++){
                 if(i==j){
-                    fila.push(1);
+                    row.push(1);
                 }else{ 
-                    fila.push(0);
+                    row.push(0);
                 }
             }
-            identidad.push(fila);
+            identity.push(row);
         }
 
-        let pivote;
         let aux;
-
+        let pivot;
         for(let i=0; i<rows; i++){
             if(matrix_aux[i][i]!=0){
-                pivote=matrix_aux[i][i];
+                pivot=matrix_aux[i][i];
             }else{
                 let found=false;
                 for(let j=i+1; j<rows; j++){
@@ -653,7 +678,7 @@ function inverse(){
                         matrix_aux[i]=matrix_aux[j];
                         matrix_aux[j]=temp;
                         found=true;
-                        pivote=matrix_aux[i][i];
+                        pivot=matrix_aux[i][i];
                         break;
                     }
                 }
@@ -664,8 +689,8 @@ function inverse(){
             }
 
             for(let k=0; k<cols; k++){
-                matrix_aux[i][k]=matrix_aux[i][k]/pivote;
-                identidad[i][k]=identidad[i][k]/pivote; 
+                matrix_aux[i][k]=matrix_aux[i][k]/pivot;
+                identity[i][k]=identity[i][k]/pivot; 
             }
 
             for(let j=0; j<cols; j++){
@@ -673,7 +698,7 @@ function inverse(){
                     aux=matrix_aux[j][i];
                     for(let k=0; k<cols; k++){
                         matrix_aux[j][k]=matrix_aux[j][k]-aux*matrix_aux[i][k];
-                        identidad[j][k]=identidad[j][k]-aux*identidad[i][k];
+                        identity[j][k]=identity[j][k]-aux*identity[i][k];
                     }
                 }
             }
@@ -685,8 +710,154 @@ function inverse(){
 
         result.innerHTML=`<div style="font-size: 1.5rem; text-align: center;">
             \\[ A = ${matrix_latex(matrixA).slice(2, -2)} \\]
-            \\[ A^{-1} = ${matrix_latex(identidad).slice(2, -2)} \\]
+            \\[ A^{-1} = ${matrix_latex(identity).slice(2, -2)} \\]
         </div>`;
+
+        const restart_button=document.createElement('button');
+        restart_button.innerText='Nuevo cálculo';
+        restart_button.className='button';
+        restart_button.onclick=() => {
+            result.classList.remove('active');
+            setTimeout(() => {
+                result.innerHTML=original_res;
+                result.classList.add('active');
+            }, 400);
+        }
+
+        result.appendChild(restart_button);
+        MathJax.typeset();
+    }
+}
+
+function gauss(){ // - - - GAUSS - - - 
+    const back=document.getElementById('back');
+    document.body.style.overflow='hidden';
+    back.innerHTML='';
+
+    const inputs=document.querySelectorAll('#gauss .box_1 textarea');
+    const rows=parseInt(inputs[0].value);
+    let cols=parseInt(inputs[1].value);
+
+    if(isNaN(rows) || isNaN(cols) || rows<=0 || cols<=0){
+        alert('Ingrese números válidos para las filas y columnas.');
+        return;
+    }
+
+    const container=document.createElement('div');
+    container.style.display='flex';
+    container.style.flexDirection='column';
+    container.style.alignItems='center';
+    container.style.padding='2rem';
+    container.style.backgroundColor='white';
+    container.style.margin='5rem auto';
+    container.style.width='fit-content';
+
+    let matrixA=[];
+    const tableA=create_table(rows, cols+1, 'matrixA');
+    tableA.style.marginTop='1rem';
+    const calc_button=document.createElement('button');
+    calc_button.innerText='Calcular';
+    calc_button.className='button';
+    calc_button.onclick=() => calculate_gauss();
+
+    container.appendChild(document.createElement('h2')).innerText='Matriz A';
+    container.appendChild(tableA);
+    container.appendChild(calc_button);
+
+    back.appendChild(container);
+    back.style.display='flex';
+    back.style.justifyContent='center';
+    back.style.alignItems='center';
+
+    function calculate_gauss(){
+        matrixA=read_matrix(tableA);
+        const matrix_aux=read_matrix(tableA);
+
+        if(!matrixA){
+            alert('Ningún espacio puede quedar vacío.');
+            return;
+        }
+
+        document.body.style.overflow='auto';
+        back.style.display='none';
+
+        const result=document.getElementById('gauss');
+        const original_res=result.innerHTML;
+        result.innerHTML='';
+
+        let aux=0;
+        let pivot=0;
+        const variables=new Array(cols).fill(0);
+
+        if(rows>cols){
+
+            let adjustment=rows-cols;
+            cols++;
+
+            for(let i=0; i<rows-adjustment; i++){
+                if(matrix_aux[i][i]!=0){
+                    pivot=matrix_aux[i][i];
+                }else{
+                    i++;
+                    break;
+                }
+
+                for(let k=0; k<cols; k++){
+                    matrix_aux[i][k]=matrix_aux[i][k]/pivot;
+                }
+
+                for(let j=0; j<rows-adjustment; j++){
+                    if(i<j){
+                        aux=matrix_aux[j][i];
+                        for(let k=0; k<cols; k++){
+                            matrix_aux[j][k]=matrix_aux[j][k]-aux*matrix_aux[i][k];
+                        }
+                    }
+                }
+            }
+
+            for(let i=rows-adjustment-1; i>=0; i--){
+                let sum=0;
+                for(let j=i; j<cols-1; j++){
+                    sum+=matrix_aux[i][j]*variables[j];
+                }
+                variables[i]=matrix_aux[i][cols-1]-sum;
+            }
+
+            for(let i=rows-adjustment; i<rows; i++){
+                let sum=0;
+                for(let j=0; j<cols-1; j++){
+                    sum+=matrix_aux[i][j]*variables[j];
+                }
+
+                console.log(`sum: ${sum}`);
+                console.log(`matrix_aux: ${matrix_aux[i][cols-1]}`);
+
+                if(sum!=matrix_aux[i][cols-1]){
+                    alert('El sistema no tiene solución.');
+                    result.innerHTML=original_res;
+                    return;
+                }else{ // Falta que si los valores son fracciones, se muestren en formato latex
+                    latex_variables='\\[';
+                    for(let i=0; i<variables.length; i++){
+                        latex_variables+=`x_{${i + 1}}=${variables[i]}`;
+                        if(i<variables.length-1) latex_variables+=',\\quad ';
+                    }
+
+                    latex_variables+='\\]';
+                    result.innerHTML=`<div style="font-size: 1.5rem; text-align: center;">
+                        \\[ A = ${matrix_latex(matrixA).slice(2, -2)} \\]
+                        \\[ B = ${matrix_latex(matrix_aux).slice(2, -2)} \\]
+                        ${latex_variables}
+                    </div>`;
+                }
+            }
+
+        }else if(rows=cols){
+            //Ecuaciones = variables
+        }else{
+            //Más variables que ecuaciones (Familia)
+        }
 
         const restart_button=document.createElement('button');
         restart_button.innerText='Nuevo cálculo';
