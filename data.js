@@ -874,3 +874,165 @@ function gauss(){ // - - - GAUSS - - -
         MathJax.typeset();
     }
 }
+
+function cramer(){ // - - - CRAMER - - - // Falta los casos en los que el sistema no tiene solución
+    const back=document.getElementById('back');
+    document.body.style.overflow='hidden';
+    back.innerHTML='';
+
+    const inputs=document.querySelectorAll('#cramer .box_1 textarea');
+    const rows=parseInt(inputs[0].value);
+    let cols=parseInt(inputs[1].value);
+
+    if(isNaN(rows) || isNaN(cols) || rows<=0 || cols<=0){
+        alert('Ingrese números válidos para las filas y columnas.');
+        return;
+    }
+    
+    if (rows !== cols){
+        alert('El numero de variables debe ser igual al numero de ecuaciones.');
+        return;
+    } 
+
+    const container=document.createElement('div');
+    container.style.display='flex';
+    container.style.flexDirection='column';
+    container.style.alignItems='center';
+    container.style.padding='2rem';
+    container.style.backgroundColor='white';
+    container.style.margin='5rem auto';
+    container.style.width='fit-content';
+
+    let matrixA=[];
+    const tableA=create_table(rows, cols+1, 'matrixA');
+    tableA.style.marginTop='1rem';
+    const calc_button=document.createElement('button');
+    calc_button.innerText='Calcular';
+    calc_button.className='button';
+    calc_button.onclick=() => calculate_cramer();
+
+    container.appendChild(document.createElement('h2')).innerText='Matriz A';
+    container.appendChild(tableA);
+    container.appendChild(calc_button);
+
+    back.appendChild(container);
+    back.style.display='flex';
+    back.style.justifyContent='center';
+    back.style.alignItems='center';
+    
+    function calculate_cramer(){
+        matrixA=read_matrix(tableA);
+
+        if(!matrixA){
+            alert('Ningún espacio puede quedar vacío.');
+            return;
+        }
+
+        document.body.style.overflow='auto';
+        back.style.display='none';
+
+        const result=document.getElementById('cramer');
+        const original_res=result.innerHTML;
+        result.innerHTML='';
+
+        cols++;
+        const B = new Array(rows);
+        const variables = new Array(cols - 1);
+        const matrix_coef = [];
+
+        for (let i=0; i<rows; i++){
+            const fila = [];
+            for (let j=0; j<cols-1; j++){
+                fila.push(matrixA[i][j]);
+            }
+            matrix_coef.push(fila);
+        }
+        
+        for (let i=0; i<rows; i++){
+            B[i] = matrixA[i][cols-1];
+        }
+
+        const det_A = determinant(matrix_coef);
+
+        for (let i=0; i<cols-1; i++){
+            const matrix_aux = matrix_det(matrix_coef, B, i, rows);
+            variables[i] = (determinant(matrix_aux)/det_A);
+        }
+        console.log(variables);
+
+        function matrix_det(A, B, col, tam){
+            const matrix_aux = [];
+            
+            for (let i=0; i<tam; i++){
+                const fila = [];
+                for (let j=0; j<tam; j++){
+                    fila.push(j == col ? B[i] : A[i][j]);
+                }
+                matrix_aux.push(fila);
+            }
+            return matrix_aux;
+        }
+
+        function gcd(a, b) {
+            // Máximo común divisor
+            return b === 0 ? a : gcd(b, a % b);
+        }
+        
+        function simplificarFraccion(numerador, denominador) {
+            const signo = (numerador * denominador < 0) ? '-' : '';
+            numerador = Math.abs(numerador);
+            denominador = Math.abs(denominador);
+        
+            const divisor = gcd(numerador, denominador);
+            const num = numerador / divisor;
+            const den = denominador / divisor;
+        
+            return { numerador: signo + num, denominador: den };
+        }
+        
+        function soluciones_latex(A, B, variables) {
+            const detA = determinant(A);
+            let latex = '\\begin{aligned}';
+        
+            for (let i = 0; i < variables.length; i++) {
+                const Ai = matrix_det(A, B, i, A.length);
+                const detAi = determinant(Ai);
+        
+                const decimal = detAi / detA;
+                const redondeado = Number(decimal.toFixed(3));
+        
+                if (Number.isInteger(decimal)) {
+                    latex += `x_{${i + 1}} &= ${decimal} \\\\ `;
+                } else {
+                    const { numerador, denominador } = simplificarFraccion(detAi, detA);
+                    latex += `x_{${i + 1}} &= \\frac{${numerador}}{${denominador}} = ${redondeado} \\\\ `;
+                }
+            }
+        
+            latex += '\\end{aligned}';
+            return latex;
+        }
+
+        result.innerHTML = `
+        <div style="font-size: 1.5rem; text-align: center;">
+        \\[ A = ${matrix_latex(matrix_coef).slice(2, -2)} \\]
+        \\[ B = ${matrix_latex(B.map(e => [e])).slice(2, -2)} \\]
+        \\[ \\ ${soluciones_latex(matrix_coef, B, variables)} \\]
+        </div>
+        `;
+
+        const restart_button=document.createElement('button');
+        restart_button.innerText='Nuevo cálculo';
+        restart_button.className='button';
+        restart_button.onclick=() => {
+            result.classList.remove('active');
+            setTimeout(() => {
+                result.innerHTML=original_res;
+                result.classList.add('active');
+            }, 400);
+        }
+
+        result.appendChild(restart_button);
+        MathJax.typeset();
+    }
+}
