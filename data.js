@@ -683,8 +683,8 @@ function inverse(){ // - - - INVERSE - - -
                     }
                 }
                 if(!found){
-                alert('La matriz no es invertible.');
-                return;
+                    alert('La matriz no es invertible.');
+                    return;
                 }
             }
 
@@ -787,19 +787,43 @@ function gauss(){ // - - - GAUSS - - -
 
         let aux=0;
         let pivot=0;
+        let adjustment=rows-cols;
         const variables=new Array(cols).fill(0);
 
         if(rows>cols){
-
-            let adjustment=rows-cols;
             cols++;
 
             for(let i=0; i<rows-adjustment; i++){
                 if(matrix_aux[i][i]!=0){
                     pivot=matrix_aux[i][i];
                 }else{
-                    i++;
-                    break;
+                    let found=false;
+                    for(let j=i+1; j<rows; j++){
+                        if(matrix_aux[j][i]!=0){
+                            let temp=matrix_aux[i];
+                            matrix_aux[i]=matrix_aux[j];
+                            matrix_aux[j]=temp;
+                            found=true;
+                            pivot=matrix_aux[i][i];
+                            break;
+                        }
+                    }
+                    if(!found){
+                        if(i==0){
+                            alert('El sistema que ingreso tiene más ecuaciones que variables, reescribalo correctamente.');
+                        }else if(i>0 && i<rows-adjustment-1){
+                            alert('El sistema no tiene solución.');
+                        }else{
+                            if(matrix_aux[i][cols-1]==0){
+                                alert('El sistema tiene infinitas soluciones.');
+                            }else{
+                                alert('El sistema no tiene solución.');
+                            }
+                        }
+                        
+                        result.innerHTML=original_res;
+                        return;
+                    }
                 }
 
                 for(let k=0; k<cols; k++){
@@ -853,8 +877,53 @@ function gauss(){ // - - - GAUSS - - -
                 }
             }
 
-        }else if(rows=cols){
-            //Ecuaciones = variables
+        }else if(rows==cols){
+            cols++;
+
+            for(let i=0; i<rows-adjustment; i++){
+                if(matrix_aux[i][i]!=0){
+                    pivot=matrix_aux[i][i];
+                }else{
+                    let found=false;
+                    for(let j=i+1; j<rows-adjustment; j++){
+                        if(matrix_aux[j][i]!=0){
+                            let temp=matrix_aux[i];
+                            matrix_aux[i]=matrix_aux[j];
+                            matrix_aux[j]=temp;
+                            found=true;
+                            pivot=matrix_aux[i][i];
+                            break;
+                        }
+                    }
+                    if(!found){
+                        alert('El sistema no tiene solución.');
+                        return;
+                    }
+                }
+
+                for(let k=0; k<cols; k++){
+                    matrix_aux[i][k]=matrix_aux[i][k]/pivot;
+                }
+
+                for(let j=0; j<rows-adjustment; j++){
+                    if(i<j){
+                        aux=matrix_aux[j][i];
+                        for(let k=0; k<cols; k++){
+                            matrix_aux[j][k]=matrix_aux[j][k]-aux*matrix_aux[i][k];
+                        }
+                    }
+                }
+            }
+
+            for(let i=rows-adjustment-1; i>=0; i--){
+                let sum=0;
+                for(let j=i; j<cols-1; j++){
+                    sum+=matrix_aux[i][j]*variables[j];
+                }
+                variables[i]=matrix_aux[i][cols-1]-sum;
+            }
+
+
         }else{
             //Más variables que ecuaciones (Familia)
         }
@@ -875,7 +944,7 @@ function gauss(){ // - - - GAUSS - - -
     }
 }
 
-function cramer(){ // - - - CRAMER - - - // Falta los casos en los que el sistema no tiene solución
+function cramer(){ // - - - CRAMER - - - 
     const back=document.getElementById('back');
     document.body.style.overflow='hidden';
     back.innerHTML='';
@@ -889,10 +958,10 @@ function cramer(){ // - - - CRAMER - - - // Falta los casos en los que el sistem
         return;
     }
     
-    if (rows !== cols){
+    if(rows!==cols){
         alert('El numero de variables debe ser igual al numero de ecuaciones.');
         return;
-    } 
+    }
 
     const container=document.createElement('div');
     container.style.display='flex';
@@ -953,6 +1022,12 @@ function cramer(){ // - - - CRAMER - - - // Falta los casos en los que el sistem
         }
 
         const det_A = determinant(matrix_coef);
+
+        if (det_A == 0){
+            alert('El sistema no tiene solución');
+            result.innerHTML=original_res;
+            return;
+        }
 
         for (let i=0; i<cols-1; i++){
             const matrix_aux = matrix_det(matrix_coef, B, i, rows);
